@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <time.h>
 
-// Helper function to convert string to lower case
-void stringToLower(char* s)
+/* Helper function to convert string to lower case */
+void stringToLower(char* str)
 {
-	while (*s != '\0') {
-		*s = tolower(*s);
-		s++;
+	while (*str != '\0') {
+		*str = tolower(*str);
+		str++;
 	}
 }
 
@@ -22,15 +22,20 @@ void stringToLower(char* s)
 */
 bool usernameInPassword(const char* username, const char* password)
 {
+	const int MAX_USERNAME_LENGTH = 100;
+	const int MAX_PASSWORD_LENGTH = 100;
 
-	char lowercase_username[16];
-	char lowercase_password[16];
+	char lowercase_username[MAX_USERNAME_LENGTH];
+	char lowercase_password[MAX_PASSWORD_LENGTH];
+
 	strcpy(lowercase_username, username);
 	strcpy(lowercase_password, password);
+
 	stringToLower(lowercase_username);
 	stringToLower(lowercase_password);
 
-	for (int i = 0; *(lowercase_password + i) != '\0'; i++) {
+	// For every char in password, iterate through entire username to see if it's a match
+	for (int i = 0; i < strlen(lowercase_password); i++) {
 		int j;
 		for (j = 0; j < strlen(lowercase_username); j++) {
 			if (lowercase_password[i + j] != lowercase_username[j]) {
@@ -52,10 +57,10 @@ bool usernameInPassword(const char* username, const char* password)
  * Flags for lower case, upper case, digit, and consecutive letters
  * If any of those flags are false, weak password -> return false
 */
-bool isStrongPassword(const char *username, const char *password)
-{
-	if (strlen(password) < 8) return false;
+bool isStrongPassword(const char * username, const char * password) {
+	const int MIN_PASSWORD_LENGTH = 8;
 
+	if (strlen(password) < MIN_PASSWORD_LENGTH) return false;
 
 	int consecutive_chars = 0;
 	bool lower_flag = false, upper_flag = false, digit_flag = false, consecutive_flag = false;
@@ -84,11 +89,13 @@ bool isStrongPassword(const char *username, const char *password)
 	return true;
 }
 
-bool isStrongDefaultPassword(const char *username, const char *password)
-{
-	if (strlen(password) < 8 || strlen(password) > 15) return false;
-	
+bool isStrongDefaultPassword(const char *username, const char *password) {
+	const int MIN_PASSWORD_LENGTH = 8, MAX_PASSWORD_LENGTH = 15;
+
+	if (strlen(password) < MIN_PASSWORD_LENGTH || strlen(password) > MAX_PASSWORD_LENGTH) return false;
+
 	bool lower_flag = false, upper_flag = false, digit_flag = false;
+
 	for (int i = 0; i < strlen(password); i++) {
 		char ch = *(password + i);
 		if (islower(ch)) {
@@ -101,6 +108,7 @@ bool isStrongDefaultPassword(const char *username, const char *password)
 			return false;
 		}
 	}
+
 	bool user_in_pwd = usernameInPassword(username, password);
 
 	if (!lower_flag || !upper_flag || !digit_flag || user_in_pwd) return false;
@@ -108,19 +116,19 @@ bool isStrongDefaultPassword(const char *username, const char *password)
 	return true;
 }
 
-// Helper function to generate default passwords
+/* Helper function to generate default passwords */
 void generatePassword(char* default_password, char* valid_characters, int number_of_valid_characters)
 {
-	const int lower_bound = 8, upper_bound = 15;
-	const int password_length = (rand() % (upper_bound - lower_bound + 1)) + lower_bound;
-	char random_password[password_length + 1];
+	const int MIN_PASSWORD_LENGTH = 8, MAX_PASSWORD_LENGTH = 15;
+	const int PASSWORD_LENGTH = (rand() % (MAX_PASSWORD_LENGTH - MIN_PASSWORD_LENGTH + 1)) + MIN_PASSWORD_LENGTH;
 
-	for (int i = 0; i <= password_length; i++) {
+	char random_password[PASSWORD_LENGTH + 1];
+
+	for (int i = 0; i < PASSWORD_LENGTH; i++) {
 		int n = rand() % number_of_valid_characters;
-		char ch = valid_characters[n];
-		random_password[i] = ch;
+		random_password[i] = valid_characters[n];
 	}
-	random_password[password_length] = '\0';
+	random_password[PASSWORD_LENGTH] = '\0';
 
 	strcpy(default_password, random_password);
 }
@@ -130,49 +138,45 @@ void generatePassword(char* default_password, char* valid_characters, int number
  * Doesn't have to satisfy the 4 consecutive characters requirement
  * Allowed chars are lowercase letters, uppercase letters, and numbers
  * Call rand() % (15 - 8 + 1) + 8 to get length of password -> change raw numbers to variables lower_bound and upper_bound
- * Create array of length (# of lowercase letters + # of uppercase letters + # of numbers). This will be our available characters to create a password with
+ * Create array of length (# of lowercase letters + # of uppercase letters + # of digits). These will be our available characters to create a password with
  * Call rand() % length, get character at index of characters from number returned from rand() % length
 */
-void generateDefaultPassword(char *default_password, const char *username)
-{
+void generateDefaultPassword(char * default_password, const char * username) {
+	const int NUMBER_OF_LOWERCASE_CHARS = 26, NUMBER_OF_UPPERCASE_CHARS = 26, NUMBER_OF_DIGITS = 10;
+	const int NUMBER_OF_VALID_CHARACTERS = NUMBER_OF_LOWERCASE_CHARS + NUMBER_OF_UPPERCASE_CHARS + NUMBER_OF_DIGITS;
+	char valid_characters[NUMBER_OF_VALID_CHARACTERS + 1];
+	int i = 0;
 
-	const int number_of_lowercase_chars = 26, number_of_uppercase_chars = 26, number_of_numbers = 10;
-	const int number_of_valid_characters = number_of_lowercase_chars + number_of_uppercase_chars + number_of_numbers;
-	char valid_characters[number_of_valid_characters];
-	int index = 0;
-
-	// Populate array of valid characters
+	/* Populate array with valid characters */
 	for (char ch = 'a'; ch <= 'z'; ch++) {
-		valid_characters[index++] = ch;
+		valid_characters[i++] = ch;
 	}
 	for (char ch = 'A'; ch <= 'Z'; ch++) {
-		valid_characters[index++] = ch;
+		valid_characters[i++] = ch;
 	}
 	for (char ch = '0'; ch <= '9'; ch++) {
-		valid_characters[index++] = ch;
+		valid_characters[i++] = ch;
 	}
+	valid_characters[i] = '\0';
 
-	printf("Generating a default password...\n");
 	while (!isStrongDefaultPassword(username, default_password)) {
-		generatePassword(default_password, valid_characters, number_of_valid_characters);
+		generatePassword(default_password, valid_characters, NUMBER_OF_VALID_CHARACTERS);
 	}
-	printf("Generated a default password: %s\n", default_password);
 }
 
 int main(void)
 {
 	srand(time(0));
 
-	char username[16];
-	char password[16];
+	char username[100];
+	char password[100];
 
 	printf("Enter a username: ");
-	scanf("%s", username);
+	scanf(" %99[^\n]", username);
 
-	bool strong = false;
 	while (1) {
 		printf("Enter a password: ");
-		scanf("%s", password);
+		scanf(" %99[^\n]", password);
 
 		if (isStrongPassword(username, password)) {
 			printf("Strong password!\n");
@@ -185,7 +189,10 @@ int main(void)
 	printf("\n");
 
 	char default_password[16] = "test";
+
+	printf("Generating a default password...\n");
 	generateDefaultPassword(default_password, username);
+	printf("Generated default password: %s\n", default_password);
 
 	return 0;
 }
