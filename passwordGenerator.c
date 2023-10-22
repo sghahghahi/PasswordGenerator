@@ -57,7 +57,8 @@ bool usernameInPassword(const char* username, const char* password)
  * Flags for lower case, upper case, digit, and consecutive letters
  * If any of those flags are false, weak password -> return false
 */
-bool isStrongPassword(const char * username, const char * password) {
+bool isStrongPassword(const char * username, const char * password)
+{
 	const int MIN_PASSWORD_LENGTH = 8;
 
 	if (strlen(password) < MIN_PASSWORD_LENGTH) return false;
@@ -89,7 +90,8 @@ bool isStrongPassword(const char * username, const char * password) {
 	return true;
 }
 
-bool isStrongDefaultPassword(const char *username, const char *password) {
+bool isStrongDefaultPassword(const char *username, const char *password)
+{
 	const int MIN_PASSWORD_LENGTH = 8, MAX_PASSWORD_LENGTH = 15;
 
 	if (strlen(password) < MIN_PASSWORD_LENGTH || strlen(password) > MAX_PASSWORD_LENGTH) return false;
@@ -134,14 +136,15 @@ void generatePassword(char* default_password, char* valid_characters, int number
 }
 
 /**
- * Generated password must be >= 8 && <= 15 in length
+ * Length of generated password must be >= 8 && <= 15
  * Doesn't have to satisfy the 4 consecutive characters requirement
  * Allowed chars are lowercase letters, uppercase letters, and numbers
- * Call rand() % (15 - 8 + 1) + 8 to get length of password -> change raw numbers to variables lower_bound and upper_bound
+ * Call rand() % (15 - 8 + 1) + 8 to get length of generated password
  * Create array of length (# of lowercase letters + # of uppercase letters + # of digits). These will be our available characters to create a password with
- * Call rand() % length, get character at index of characters from number returned from rand() % length
+ * Call rand() % length to get character at random index of valid character array
 */
-void generateDefaultPassword(char * default_password, const char * username) {
+void generateDefaultPassword(char * default_password, const char * username)
+{
 	const int NUMBER_OF_LOWERCASE_CHARS = 26, NUMBER_OF_UPPERCASE_CHARS = 26, NUMBER_OF_DIGITS = 10;
 	const int NUMBER_OF_VALID_CHARACTERS = NUMBER_OF_LOWERCASE_CHARS + NUMBER_OF_UPPERCASE_CHARS + NUMBER_OF_DIGITS;
 	char valid_characters[NUMBER_OF_VALID_CHARACTERS + 1];
